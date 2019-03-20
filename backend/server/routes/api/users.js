@@ -11,6 +11,7 @@ const validateLoginInput = require("../../../validation/login");
 const User = require("../../../models/User");
 const passport = require("passport");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 const app = express();
 
@@ -87,6 +88,10 @@ router.get("/google", addSocketIdtoSession,
   passport.authenticate('google', { scope: ["profile", "email"] })
 );
 
+router.get("/facebook", addSocketIdtoSession,
+  passport.authenticate('facebook', { scope: ["email"]})
+);
+
 router.get(
   "/googlecallback",
   passport.authenticate("google", { scope: ["profile", "email"] }),
@@ -109,6 +114,34 @@ router.get(
     const io = app.get('io');
     //console.log("token: ",token);
     io.in(req.session.socketId).emit('google', "Bearer " + token);
+    return res.end(`<script>
+    window.close();
+</script>`)
+  }
+);
+
+router.get(
+  "/facebookcallback",
+  passport.authenticate("facebook", { scope: ["email"] }),
+  function (req, res) {
+    const u = req.user;
+    const payload = {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      date: u.date,
+      avatar: u.avatar,
+      description: u.description
+    };
+    const token = jwt.sign(
+      payload,
+      keys.db.secretOrKey,
+      {
+        expiresIn: 31556926 // 1 year in seconds
+      });
+    const io = app.get('io');
+    //console.log("token: ",token);
+    io.in(req.session.socketId).emit('facebook', "Bearer " + token);
     return res.end(`<script>
     window.close();
 </script>`)

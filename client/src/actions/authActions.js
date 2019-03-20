@@ -67,6 +67,25 @@ export const setUserLoading = () => {
     type: USER_LOADING
   };
 };
+
+export const updateCurrentUser = (
+  avatarColor,
+  bio,
+  email,
+  name,
+  userId,
+  showEmail
+) => dispatch =>
+  axios
+    .patch(`/users/${userId}`, { avatarColor, bio, email, name, showEmail })
+    .then((res) => {
+      const { token } = res.data;
+      localStorage.setItem('jwtToken', token);
+      setAuthToken(token);
+      const decoded = jwt_decode(token);
+      dispatch(setCurrentUser(decoded));
+    })
+    .catch(err => console.log(err));
 // Log user out
 export const logoutUser = () => dispatch => {
   // Remove token from local storage

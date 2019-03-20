@@ -6,10 +6,11 @@ const passport = require("passport");
 const profile = require('./routes/api/profile');
 const users = require("./routes/api/users");
 const groups = require("./routes/api/groups");
+const posts = require('./routes/api/postRoute');
+
 const session=require('express-session');
 const app = express();
 require('dotenv').config();
-
 const keys=require("../config/keys");
 
 //Middleware
@@ -22,7 +23,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use(session({
-  secret:process.env.SESSION_SECRET,
+  secret: 'secret',//process.env.SESSION_SECRET,
   resave:true,
   saveUninitialized:true
 }));
@@ -42,8 +43,6 @@ mongoose
   .catch(err => console.log(err));
 
 // Post
-const posts = require('./routes/api/posts');
-app.use('/api/posts',posts);
 
 
 // Passport middleware
@@ -56,6 +55,7 @@ require("../config/passport")(passport);
 app.use("/api/users", users);
 app.use("/api/profile", profile);
 app.use("/api/groups",groups);
+app.use('/api/posts', posts);
 
 
 //Heroku, might need to change this
